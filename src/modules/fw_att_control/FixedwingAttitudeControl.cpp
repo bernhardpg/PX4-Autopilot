@@ -641,9 +641,10 @@ void FixedwingAttitudeControl::Run()
 		_actuators.timestamp = hrt_absolute_time();
 		_actuators.timestamp_sample = att.timestamp;
 
-		if (_sysid_ctrl.is_active()) // TODO: system identification
+		_sysid_ctrl.update();
+		if (_sysid_ctrl.is_active())
 		{
-			PX4_INFO("Running sys id\n");
+			_actuators.control[1] = _sysid_ctrl.get_input();
 		}
 
 		/* Only publish if any of the proper modes are enabled */
