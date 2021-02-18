@@ -36,6 +36,7 @@
 #include "ecl_roll_controller.h"
 #include "ecl_wheel_controller.h"
 #include "ecl_yaw_controller.h"
+#include "SystemIdController.h"
 #include <lib/ecl/geo/geo.h>
 #include <lib/mathlib/mathlib.h>
 #include <lib/parameters/param.h>
@@ -216,6 +217,8 @@ private:
 	ECL_PitchController		_pitch_ctrl;
 	ECL_YawController		_yaw_ctrl;
 	ECL_WheelController		_wheel_ctrl;
+
+	SystemIdController		_sysid_ctrl;
 
 	void control_flaps(const float dt);
 
