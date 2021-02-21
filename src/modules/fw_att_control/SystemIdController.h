@@ -21,24 +21,20 @@ public:
 private:
 	bool _should_run = true;
 	bool _is_active = false; // will generate a step on roll
-	int _init_time;
-	int _sysid_start_time;
+	hrt_abstime _init_time;
+	hrt_abstime _sysid_start_time;
 
-	int _delay_before_start = 50 * 1000000; // TODO change
-	float _input_low = 0.2;
-	float _input_high = 0.4;
-	int _step_length = 1* 1000000; // us
-	int _sysid_duration = _step_length * 2;
+	hrt_abstime _sysid_duration;
+	hrt_abstime _delay_before_start = 50 * 1e6;
+	hrt_abstime _step_length = 1 * 1000000; // us
+	int _step_amplitude = 0.3;
 
 	float _input; // Number between -1 and 1
 
 	void sysid_activate();
 	void sysid_deactivate();
 
-	int time_since_init(){return hrt_absolute_time() - _init_time;}
-	int time_elapsed(){return hrt_absolute_time() - _sysid_start_time;}
-	void set_sysid_start_time(){_sysid_start_time = hrt_absolute_time();}
-	float generate_signal_step();
+	float generate_signal_step(float amplitude, float step_length);
 
 	//DEFINE_PARAMETERS( // TODO add parameters
 	//	(ParamBool<px4::params::WV_EN>) _param_wv_en,
