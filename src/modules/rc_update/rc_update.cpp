@@ -179,6 +179,7 @@ void RCUpdate::update_rc_functions()
 	_rc.function[rc_channels_s::FUNCTION_GEAR] = _param_rc_map_gear_sw.get() - 1;
 	_rc.function[rc_channels_s::FUNCTION_STAB] = _param_rc_map_stab_sw.get() - 1;
 	_rc.function[rc_channels_s::FUNCTION_MAN] = _param_rc_map_man_sw.get() - 1;
+	_rc.function[rc_channels_s::FUNCTION_SYSID] = _param_rc_map_sysid_sw.get() - 1;
 
 	_rc.function[rc_channels_s::FUNCTION_FLAPS] = _param_rc_map_flaps.get() - 1;
 
@@ -553,6 +554,7 @@ void RCUpdate::UpdateManualSwitches(const hrt_abstime &timestamp_sample)
 	switches.arm_switch        = get_rc_sw2pos_position(rc_channels_s::FUNCTION_ARMSWITCH,  _param_rc_armswitch_th.get());
 	switches.transition_switch = get_rc_sw2pos_position(rc_channels_s::FUNCTION_TRANSITION, _param_rc_trans_th.get());
 	switches.gear_switch       = get_rc_sw2pos_position(rc_channels_s::FUNCTION_GEAR,       _param_rc_gear_th.get());
+	switches.sysid_switch 	   = get_rc_sw2pos_position(rc_channels_s::FUNCTION_SYSID,      _param_rc_sysid_th.get());
 
 	// last 2 switch updates identical (simple protection from bad RC data)
 	if (switches == _manual_switches_previous) {

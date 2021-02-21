@@ -25,6 +25,7 @@ uint8 offboard_switch            # offboard 2 position switch (optional): _NORMA
 uint8 kill_switch                # throttle kill: _NORMAL_, KILL
 uint8 gear_switch                # landing gear switch: _DOWN_, UP
 uint8 transition_switch          # VTOL transition switch: _HOVER, FORWARD_FLIGHT
+uint8 sysid_switch 		 # System Identification switch
 
 # legacy "advanced" switch configuration (will be removed soon)
 uint8 mode_switch                # main mode 3 position switch (mandatory): _MANUAL_, ASSIST, AUTO
