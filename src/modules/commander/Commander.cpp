@@ -2305,6 +2305,9 @@ Commander::run()
 					tune_positive(_armed.armed);
 					_status_changed = true;
 				}
+
+				// Check for system identification switch
+				_should_perform_sysid_maneuver = _manual_control_switches.sysid_switch;
 			}
 
 			/* check throttle kill switch */
@@ -3361,6 +3364,20 @@ Commander::update_control_mode()
 
 	_vehicle_control_mode.flag_external_manual_override_ok =
 		(_status.vehicle_type == vehicle_status_s::VEHICLE_TYPE_FIXED_WING && !_status.is_vtol);
+
+	//_vehicle_control_mode.flag_sysid_maneuver_active = _should_perform_sysid_maneuver;
+	if (hrt_absolute_time() < 8 * 1e6)
+		_vehicle_control_mode.flag_sysid_maneuver_active = false;
+	else if (hrt_absolute_time() < 15 * 1e6)
+		_vehicle_control_mode.flag_sysid_maneuver_active = true;
+	else if (hrt_absolute_time() < 20 * 1e6)
+		_vehicle_control_mode.flag_sysid_maneuver_active = false;
+	else if (hrt_absolute_time() < 25 * 1e6)
+		_vehicle_control_mode.flag_sysid_maneuver_active = true;
+	else if (hrt_absolute_time() < 25000001)
+		_vehicle_control_mode.flag_sysid_maneuver_active = false;
+
+	PX4_INFO("Simulating sysid id switch: %d", _vehicle_control_mode.flag_sysid_maneuver_active);
 
 	switch (_status.nav_state) {
 	case vehicle_status_s::NAVIGATION_STATE_MANUAL:
