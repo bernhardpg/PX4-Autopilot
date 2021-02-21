@@ -1951,6 +1951,9 @@ Commander::run()
 			const bool arm_button_pressed = _param_arm_switch_is_button.get()
 							&& (_manual_control_setpoint.arm_switch == manual_control_setpoint_s::SWITCH_POS_ON);
 
+			// Check for system identification switch
+			_should_perform_sysid_maneuver = _manual_control_setpoint.sysid_switch == manual_control_setpoint_s::SWITCH_POS_ON;
+
 			/* DISARM
 			 * check if left stick is in lower left position or arm button is pushed or arm switch has transition from arm to disarm
 			 * and we are in MANUAL, Rattitude, or AUTO_READY mode or (ASSIST mode and landed)
@@ -3194,6 +3197,9 @@ Commander::update_control_mode()
 	control_mode.flag_armed = armed.armed;
 	control_mode.flag_external_manual_override_ok = (status.vehicle_type == vehicle_status_s::VEHICLE_TYPE_FIXED_WING
 			&& !status.is_vtol);
+
+	control_mode.flag_sysid_maneuver_active = _should_perform_sysid_maneuver;
+	PX4_INFO("Sysid Switch: %d", control_mode.flag_sysid_maneuver_active);
 
 	switch (status.nav_state) {
 	case vehicle_status_s::NAVIGATION_STATE_MANUAL:

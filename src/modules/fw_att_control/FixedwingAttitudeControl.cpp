@@ -642,16 +642,38 @@ void FixedwingAttitudeControl::Run()
 		_actuators.timestamp = hrt_absolute_time();
 		_actuators.timestamp_sample = att.timestamp;
 
-		// System Identification maneuvers
-		if (_sysid_ctrl.is_enabled())
+		// System Identification maneuver request from commander
+		if (_vcontrol_mode.flag_sysid_maneuver_active)
 		{
-			int _active_sysid_actuator_id = _sysid_ctrl.get_active_actuator_index();
-			_sysid_ctrl.update(_actuators.control[_active_sysid_actuator_id]);
+			// Activate maneuver if the switch is on and the maneuver is not yet active
+			if (!_sysid_ctrl.maneuver_is_active())
+			{
+				_sysid_ctrl.sysid_activate(_sysid_ctrl.get_active_actuator_index());
+			}
+
+			// Only perform maneuver if switch is on and maneuver is still not finished
 			if (_sysid_ctrl.maneuver_is_active())
 			{
+				int _active_sysid_actuator_id = _sysid_ctrl.get_active_actuator_index();
+				_sysid_ctrl.update(_actuators.control[_active_sysid_actuator_id]);
+				// Override actuator output for desired actuator (roll, pitch)
 				_actuators.control[_active_sysid_actuator_id] = _sysid_ctrl.get_output();
 			}
 		}
+		else
+		{
+			// Abort the maneuver immediately if the switch is off
+			if (_sysid_ctrl.maneuver_is_active())
+			{
+				_sysid_ctrl.sysid_deactivate();
+			}
+			// Reset the system identification if the switch is off and there is no maneuver going on
+			else
+			{
+				_sysid_ctrl.sysid_reset();
+			}
+		}
+
 
 		/* Only publish if any of the proper modes are enabled */
 		if (_vcontrol_mode.flag_control_rates_enabled ||

@@ -20,13 +20,16 @@ enum actuator_index
 	PITCH = 1
 };
 
-class SystemIdController : public ModuleParams
+class SystemIdController : public ModuleParams // TODO change name
 {
 public:
 	SystemIdController();
 	~SystemIdController() = default;
 
-	bool is_enabled() {return true;} // TODO pass as parameter
+	void sysid_activate(float ref_value);
+	void sysid_reset(){_should_run = true;}
+	void sysid_deactivate(); // TODO change name
+
 	bool maneuver_is_active() {return _is_active;}
 	actuator_index get_active_actuator_index(){return _active_actuator_index;}
 	float get_output(){return _output;}
@@ -49,9 +52,6 @@ private:
 	actuator_index _active_actuator_index;
 
 	float _output; // Number between -1 and 1
-
-	void sysid_activate(float ref_value);
-	void sysid_deactivate();
 
 	signal_type _signal_type;
 

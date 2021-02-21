@@ -4,7 +4,7 @@ SystemIdController::SystemIdController() :
 	ModuleParams(nullptr)
 {
 	_init_time = hrt_absolute_time();
-	_signal_type = TYPE_2_1_1;
+	_signal_type = TYPE_2_1_1; // TODO generalize to parameters
 	_active_actuator_index = ROLL;
 
 	switch (_signal_type)
@@ -26,10 +26,14 @@ SystemIdController::SystemIdController() :
 
 void SystemIdController::sysid_activate(float ref_value)
 {
-	_is_active = true;
-	_sysid_start_time = hrt_absolute_time();
-	_ref_value = ref_value;
-	PX4_INFO("%d Sysid maneuver starting", (int)_sysid_start_time);
+	// Only activate if the sysid maneuver has not yet been run
+	if (_should_run)
+	{
+		_is_active = true;
+		_sysid_start_time = hrt_absolute_time();
+		_ref_value = ref_value;
+		PX4_INFO("%d Sysid maneuver starting", (int)_sysid_start_time);
+	}
 }
 
 void SystemIdController::sysid_deactivate()
@@ -41,30 +45,23 @@ void SystemIdController::sysid_deactivate()
 
 void SystemIdController::update(float ref_value)
 {
-	// Activate after a certain time
-	if (!_is_active && _should_run && hrt_elapsed_time(&_init_time) > _delay_before_start)
+	switch (_signal_type)
 	{
-		sysid_activate(ref_value);
+	case TYPE_2_1_1:
+		_output = generate_2_1_1(_ref_value, _step_amplitude, _step_length, false);
+		break;
+	case TYPE_STEP_SIGNAL:
+	default:
+		_output = generate_signal_step(_step_amplitude, _step_length);
+		break;
 	}
+	PX4_INFO("output: %f", (double)_output);
 
-	if (_is_active)
+	// Deactive the sysid maneuver to prevent it from running again
+	if (hrt_elapsed_time(&_sysid_start_time) > _sysid_duration)
 	{
-		switch (_signal_type)
-		{
-		case TYPE_2_1_1:
-			_output = generate_2_1_1(_ref_value, _step_amplitude, _step_length, false);
-			break;
-		case TYPE_STEP_SIGNAL:
-		default:
-			_output = generate_signal_step(_step_amplitude, _step_length);
-			break;
-		}
-		//PX4_INFO("output: %f", (double)_output);
-
-		if (hrt_elapsed_time(&_sysid_start_time) > _sysid_duration)
-			sysid_deactivate();
+		sysid_deactivate();
 	}
-
 }
 
 float SystemIdController::generate_signal_step(float amplitude, float step_length)
