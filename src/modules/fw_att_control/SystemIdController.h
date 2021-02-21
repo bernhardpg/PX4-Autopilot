@@ -14,14 +14,22 @@ enum signal_type
 	TYPE_2_1_1 = 1
 };
 
+enum actuator_index
+{
+	ROLL = 0,
+	PITCH = 1
+};
+
 class SystemIdController : public ModuleParams
 {
 public:
 	SystemIdController();
 	~SystemIdController() = default;
 
-	bool is_active() {return _is_active;}
-	float get_input(){return _input;}
+	bool is_enabled() {return true;} // TODO pass as parameter
+	bool maneuver_is_active() {return _is_active;}
+	actuator_index get_active_actuator_index(){return _active_actuator_index;}
+	float get_output(){return _output;}
 
 	void update(float ref_value);
 private:
@@ -38,8 +46,9 @@ private:
 	hrt_abstime _delay_before_start = 45 * 1e6; // us
 	hrt_abstime _step_length = 0.25 * 1e6; // us
 	float _step_amplitude = 0.3;
+	actuator_index _active_actuator_index;
 
-	float _input; // Number between -1 and 1
+	float _output; // Number between -1 and 1
 
 	void sysid_activate(float ref_value);
 	void sysid_deactivate();

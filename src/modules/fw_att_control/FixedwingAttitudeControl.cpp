@@ -642,16 +642,21 @@ void FixedwingAttitudeControl::Run()
 		_actuators.timestamp = hrt_absolute_time();
 		_actuators.timestamp_sample = att.timestamp;
 
-		_sysid_ctrl.update(_actuators.control[1]);
-		if (_sysid_ctrl.is_active())
+		// System Identification maneuvers
+		if (_sysid_ctrl.is_enabled())
 		{
-			_actuators.control[1] = _sysid_ctrl.get_input();
+			int _active_sysid_actuator_id = _sysid_ctrl.get_active_actuator_index();
+			_sysid_ctrl.update(_actuators.control[_active_sysid_actuator_id]);
+			if (_sysid_ctrl.maneuver_is_active())
+			{
+				_actuators.control[_active_sysid_actuator_id] = _sysid_ctrl.get_output();
+			}
 		}
 
 		/* Only publish if any of the proper modes are enabled */
 		if (_vcontrol_mode.flag_control_rates_enabled ||
-		    _vcontrol_mode.flag_control_attitude_enabled ||
-		    _vcontrol_mode.flag_control_manual_enabled) {
+		_vcontrol_mode.flag_control_attitude_enabled ||
+		_vcontrol_mode.flag_control_manual_enabled) {
 			_actuators_0_pub.publish(_actuators);
 		}
 	}

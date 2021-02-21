@@ -5,6 +5,7 @@ SystemIdController::SystemIdController() :
 {
 	_init_time = hrt_absolute_time();
 	_signal_type = TYPE_2_1_1;
+	_active_actuator_index = ROLL;
 
 	switch (_signal_type)
 	{
@@ -51,14 +52,14 @@ void SystemIdController::update(float ref_value)
 		switch (_signal_type)
 		{
 		case TYPE_2_1_1:
-			_input = generate_2_1_1(_ref_value, _step_amplitude, _step_length, false);
+			_output = generate_2_1_1(_ref_value, _step_amplitude, _step_length, false);
 			break;
 		case TYPE_STEP_SIGNAL:
 		default:
-			_input = generate_signal_step(_step_amplitude, _step_length);
+			_output = generate_signal_step(_step_amplitude, _step_length);
 			break;
 		}
-		//PX4_INFO("Input: %f", (double)_input);
+		//PX4_INFO("output: %f", (double)_output);
 
 		if (hrt_elapsed_time(&_sysid_start_time) > _sysid_duration)
 			sysid_deactivate();
