@@ -641,7 +641,7 @@ void FixedwingAttitudeControl::Run()
 		_actuators.timestamp = hrt_absolute_time();
 		_actuators.timestamp_sample = att.timestamp;
 
-		_sysid_ctrl.update();
+		_sysid_ctrl.update(_actuators.control[1]);
 		if (_sysid_ctrl.is_active())
 		{
 			_actuators.control[1] = _sysid_ctrl.get_input();
