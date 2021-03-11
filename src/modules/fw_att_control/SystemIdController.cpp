@@ -4,8 +4,8 @@ SystemIdController::SystemIdController() :
 	ModuleParams(nullptr)
 {
 	_init_time = hrt_absolute_time();
-	_signal_type = TYPE_2_1_1; // TODO generalize to parameters
-	_active_actuator_index = ROLL;
+	_signal_type = TYPE_2_1_1; // NOTE: Can be expanded to parameters if needed
+	_active_axis = ROLL;
 
 	switch (_signal_type)
 	{
@@ -18,10 +18,11 @@ SystemIdController::SystemIdController() :
 		_sysid_duration = _step_length * 4;
 		break;
 	}
-	_sysid_duration += _time_before_start + _time_after_end;
+	_sysid_duration += _idle_time_before + _idle_time_after;
+
+	parameters_update();
 
 	PX4_INFO("%d Sysid initialized", (int)_init_time);
-	PX4_INFO("Sysid duration %d", (int)_sysid_duration);
 }
 
 void SystemIdController::sysid_activate(float ref_value)
@@ -34,6 +35,30 @@ void SystemIdController::sysid_activate(float ref_value)
 		_ref_value = ref_value;
 		PX4_INFO("%d Sysid maneuver starting", (int)_sysid_start_time);
 	}
+}
+
+void SystemIdController::parameters_update()
+{
+	// only update parameters if they changed
+	bool params_updated = _parameter_update_sub.updated();
+
+	// check for parameter updates
+	if (params_updated) {
+		// clear update
+		parameter_update_s pupdate;
+		_parameter_update_sub.copy(&pupdate);
+
+		// update parameters from storage
+		updateParams();
+
+	}
+
+	/* Sysid maneuver parameters */
+	_idle_time_before = _param_sysid_idle_time_before.get();
+	_idle_time_after = _param_sysid_idle_time_after.get();
+	_step_length = _param_sysid_step_length.get();
+	_step_amplitude = _param_sysid_step_amplitude.get();
+	_active_axis = (actuator_index)_param_sysid_active_axis.get();
 }
 
 void SystemIdController::sysid_deactivate()
@@ -55,9 +80,8 @@ void SystemIdController::update(float ref_value)
 		_output = generate_signal_step(_step_amplitude, _step_length);
 		break;
 	}
-	PX4_INFO("output: %f", (double)_output);
 
-	// Deactive the sysid maneuver to prevent it from running again
+	// Deactivate the sysid maneuver to prevent it from running again
 	if (hrt_elapsed_time(&_sysid_start_time) > _sysid_duration)
 	{
 		sysid_deactivate();
@@ -76,19 +100,19 @@ float SystemIdController::generate_signal_step(float amplitude, float step_lengt
 float SystemIdController::generate_2_1_1(float ref_value, float amplitude, float step_length, bool inverted)
 {
 	float sign = inverted ? -1 : 1;
-	if (hrt_elapsed_time(&_sysid_start_time) < _time_before_start)
+	if (hrt_elapsed_time(&_sysid_start_time) < _idle_time_before)
 	{
 		return ref_value;
 	}
-	else if (hrt_elapsed_time(&_sysid_start_time) < _time_before_start + step_length * 2)
+	else if (hrt_elapsed_time(&_sysid_start_time) < _idle_time_before + step_length * 2)
 	{
 		return ref_value + sign * amplitude;
 	}
-	else if (hrt_elapsed_time(&_sysid_start_time) < _time_before_start + step_length * 3)
+	else if (hrt_elapsed_time(&_sysid_start_time) < _idle_time_before + step_length * 3)
 	{
 		return ref_value + sign * amplitude * (-1);
 	}
-	else if (hrt_elapsed_time(&_sysid_start_time) < _time_before_start + step_length * 4)
+	else if (hrt_elapsed_time(&_sysid_start_time) < _idle_time_before + step_length * 4)
 	{
 		return ref_value + sign * amplitude;
 	}
