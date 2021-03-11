@@ -3,9 +3,11 @@
 SystemIdController::SystemIdController() :
 	ModuleParams(nullptr)
 {
+	parameters_update();
+
 	_init_time = hrt_absolute_time();
 	_signal_type = TYPE_2_1_1; // NOTE: Can be expanded to parameters if needed
-	_active_axis = ROLL;
+	_active_axis = SYSID_AXIS_ROLL;
 
 	switch (_signal_type)
 	{
@@ -20,8 +22,6 @@ SystemIdController::SystemIdController() :
 	}
 	_sysid_duration += _idle_time_before + _idle_time_after;
 
-	parameters_update();
-
 	PX4_INFO("%d Sysid initialized", (int)_init_time);
 }
 
@@ -30,9 +30,15 @@ void SystemIdController::sysid_activate(float ref_value)
 	// Only activate if the sysid maneuver has not yet been run
 	if (_should_run)
 	{
+		_ref_value = ref_value;
 		_is_active = true;
 		_sysid_start_time = hrt_absolute_time();
-		_ref_value = ref_value;
+
+		if (_param_sysid_auto_invert.get())
+		{
+			// Do sysid opposite direction everytime
+			_invert_signal = !_invert_signal;
+		}
 		PX4_INFO("%d Sysid maneuver starting", (int)_sysid_start_time);
 	}
 }
@@ -54,9 +60,9 @@ void SystemIdController::parameters_update()
 	}
 
 	/* Sysid maneuver parameters */
-	_idle_time_before = _param_sysid_idle_time_before.get();
-	_idle_time_after = _param_sysid_idle_time_after.get();
-	_step_length = _param_sysid_step_length.get();
+	_idle_time_before = _param_sysid_idle_time_before.get() * (float)1e6;
+	_idle_time_after = _param_sysid_idle_time_after.get() * (float)1e6;
+	_step_length = _param_sysid_step_length.get() * (float)1e6;
 	_step_amplitude = _param_sysid_step_amplitude.get();
 	_active_axis = (actuator_index)_param_sysid_active_axis.get();
 }
@@ -68,12 +74,12 @@ void SystemIdController::sysid_deactivate()
 	PX4_INFO("Sysid maneuver finished");
 }
 
-void SystemIdController::update(float ref_value)
+void SystemIdController::update()
 {
 	switch (_signal_type)
 	{
 	case TYPE_2_1_1:
-		_output = generate_2_1_1(_ref_value, _step_amplitude, _step_length, false);
+		_output = generate_2_1_1(_ref_value, _step_amplitude, _step_length, _invert_signal);
 		break;
 	case TYPE_STEP_SIGNAL:
 	default:

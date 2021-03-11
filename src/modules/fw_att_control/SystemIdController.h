@@ -18,8 +18,8 @@ enum signal_type
 
 enum actuator_index
 {
-	ROLL = 0,
-	PITCH = 1
+	SYSID_AXIS_ROLL = 0,
+	SYSID_AXIS_PITCH = 1
 };
 
 class SystemIdController : public ModuleParams // TODO change name
@@ -37,7 +37,7 @@ public:
 	actuator_index get_active_axis(){return _active_axis;}
 	float get_output(){return _output;}
 
-	void update(float ref_value);
+	void update();
 	void parameters_update();
 private:
 	bool _should_run = true;
@@ -46,13 +46,14 @@ private:
 	hrt_abstime _sysid_start_time;
 
 	actuator_index _active_axis;
-	hrt_abstime _sysid_duration; // TODO: remove this?
+	hrt_abstime _sysid_duration{};
 	hrt_abstime _idle_time_before;
 	hrt_abstime _idle_time_after;
 	hrt_abstime _step_length;
 	float _step_amplitude;
+	bool _invert_signal = false;
 
-	float _ref_value; // TODO: Is this a bad idea?
+	float _ref_value; // The signals will be generated around this value
 
 	float _output; // Number between -1 and 1
 
@@ -70,6 +71,7 @@ private:
 		(ParamFloat<px4::params::SYSID_IDLE_T_A>) _param_sysid_idle_time_after,
 		(ParamInt<px4::params::SYSID_ACT_AX>) _param_sysid_active_axis,
 		(ParamFloat<px4::params::SYSID_STEP_AMPL>) _param_sysid_step_amplitude,
-		(ParamFloat<px4::params::SYSID_STEP_LNGTH>) _param_sysid_step_length
+		(ParamFloat<px4::params::SYSID_STEP_LNGTH>) _param_sysid_step_length,
+		(ParamBool<px4::params::SYSID_AUTO_INV>) _param_sysid_auto_invert
 	)
 };

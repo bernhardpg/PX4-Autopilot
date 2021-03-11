@@ -648,21 +648,24 @@ void FixedwingAttitudeControl::Run()
 		// System Identification maneuver request from commander and sysid enabled in parameters
 		if (_vcontrol_mode.flag_sysid_maneuver_active && _sysid_ctrl.is_activated())
 		{
+			int active_sysid_actuator_id = _sysid_ctrl.get_active_axis();
 			// Activate maneuver if the switch is on and the maneuver is not yet active
 			if (!_sysid_ctrl.maneuver_is_active())
 			{
-				_sysid_ctrl.sysid_activate(_sysid_ctrl.get_active_axis());
+				// Activate system identification
+				// and use current actuator output as reference value
+				_sysid_ctrl.sysid_activate(_actuators.control[active_sysid_actuator_id]);
 			}
 
 			// Only perform maneuver if switch is on and maneuver is still not finished
 			if (_sysid_ctrl.maneuver_is_active())
 			{
-				int _active_sysid_actuator_id = _sysid_ctrl.get_active_axis();
-				_sysid_ctrl.update(_actuators.control[_active_sysid_actuator_id]);
 				// Override actuator output for desired actuator (roll, pitch)
-				_actuators.control[_active_sysid_actuator_id] = _sysid_ctrl.get_output();
+				_sysid_ctrl.update();
+				_actuators.control[active_sysid_actuator_id] = _sysid_ctrl.get_output();
 			}
 		}
+		// Sysid switch off
 		else
 		{
 			// Abort the maneuver immediately if the switch is off
