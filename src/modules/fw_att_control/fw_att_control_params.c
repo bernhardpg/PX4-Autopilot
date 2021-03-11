@@ -767,28 +767,74 @@ PARAM_DEFINE_FLOAT(FW_DTRIM_R_FLPS, 0.0f);
 PARAM_DEFINE_FLOAT(FW_DTRIM_P_FLPS, 0.0f);
 
 /**
+ * Activate System Identification Maneuvers
+ *
+ * This will make it possible to map a button on the RC to initiate a 2-1-1 sysid maneuver.
+ *
+ * @group System Identification
+ * @boolean
  */
 PARAM_DEFINE_INT32(SYSID_ACTIVE, 0);
 
 /**
+ * Time (seconds) before 2-1-1 maneuver starts
+ *
+ * Ideally, the vehicle should be flying stable for a while before initiating sysid.
+ * @group System Identification
+ * @min 0
+ * @max 5.0
  */
-PARAM_DEFINE_FLOAT(SYSID_IDLE_T_B, 2.0f);
+PARAM_DEFINE_FLOAT(SYSID_IDLE_T_B, 1.5f);
 
 /**
+ * Time (seconds) after 2-1-1 maneuver is finished
+ *
+ * Ideally, the vehicle should be flying stable for a while after finishing sysid.
+ * @group System Identification
+ * @min 0
+ * @max 5.0
  */
-PARAM_DEFINE_FLOAT(SYSID_IDLE_T_A, 2.0f);
+PARAM_DEFINE_FLOAT(SYSID_IDLE_T_A, 0.5f);
 
 /**
+ * Active axis for sysid maneuver
+ *
+ * Ideally, the vehicle should be flying stable for a while after finishing sysid.
+ * @group System Identification
+ * @value 0 Roll
+ * @value 1 Pitch
+ * @group FW Attitude Control
  */
 PARAM_DEFINE_INT32(SYSID_ACT_AX, 0);
 
 /**
+ * Step amplitude for sysid maneuver
+ *
+ * @group System Identification
+ * @min 0
+ * @max 1.0
  */
 PARAM_DEFINE_FLOAT(SYSID_STEP_AMPL, 0.3f);
 
 /**
+ * Length (seconds) of one pulse in the 2-1-1 step
+ *
+ * Should be set to approx. 0.7 / (2 * Fn) where Fn is the natural frequency of the axis
+ *
+ * @group System Identification
+ * @min 0
+ * @max 5.0
  */
 PARAM_DEFINE_FLOAT(SYSID_STEP_LNGTH, 0.25f);
+
+/**
+ * Switch direction of 2-1-1 pulse between each maneuver
+ *
+ * @group System Identification
+ * @boolean
+ */
+PARAM_DEFINE_INT32(SYSID_AUTO_INV, 1);
+
 
 
 
