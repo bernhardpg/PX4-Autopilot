@@ -222,6 +222,14 @@ void LoggedTopics::add_system_identification_topics()
 	add_topic("actuator_controls_0");
 	add_topic("actuator_controls_1");
 	add_topic("sensor_combined");
+	// log ekf2 states at full rate
+	add_topic("estimator_status");
+
+	// log output predictor states at full rate
+	add_topic("vehicle_angular_velocity");
+	add_topic("vehicle_attitude");
+	add_topic("vehicle_local_position");
+	add_topic("vehicle_angular_acceleration");
 }
 
 int LoggedTopics::add_topics_from_file(const char *fname)
