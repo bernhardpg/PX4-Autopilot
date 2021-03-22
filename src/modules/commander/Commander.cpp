@@ -3199,7 +3199,6 @@ Commander::update_control_mode()
 			&& !status.is_vtol);
 
 	control_mode.flag_sysid_maneuver_active = _should_perform_sysid_maneuver;
-	PX4_INFO("Sysid Switch: %d", control_mode.flag_sysid_maneuver_active);
 
 	switch (status.nav_state) {
 	case vehicle_status_s::NAVIGATION_STATE_MANUAL:
