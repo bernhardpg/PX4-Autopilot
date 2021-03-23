@@ -8,7 +8,13 @@ SystemIdController::SystemIdController() :
 	_init_time = hrt_absolute_time();
 	_signal_type = TYPE_2_1_1; // NOTE: Can be expanded to parameters if needed
 	_active_axis = SYSID_AXIS_ROLL;
+	update_sysid_duration();
 
+	PX4_INFO("%d Sysid initialized", (int)_init_time);
+}
+
+void SystemIdController::update_sysid_duration()
+{
 	switch (_signal_type)
 	{
 	case TYPE_STEP_SIGNAL:
@@ -21,8 +27,6 @@ SystemIdController::SystemIdController() :
 		break;
 	}
 	_sysid_duration += _idle_time_before + _idle_time_after;
-
-	PX4_INFO("%d Sysid initialized", (int)_init_time);
 }
 
 void SystemIdController::sysid_activate(float ref_value)
@@ -60,11 +64,16 @@ void SystemIdController::parameters_update()
 	}
 
 	/* Sysid maneuver parameters */
-	_idle_time_before = _param_sysid_idle_time_before.get() * (float)1e6;
-	_idle_time_after = _param_sysid_idle_time_after.get() * (float)1e6;
-	_step_length = _param_sysid_step_length.get() * (float)1e6;
-	_step_amplitude = _param_sysid_step_amplitude.get();
-	_active_axis = (actuator_index)_param_sysid_active_axis.get();
+	if (params_updated)
+	{
+		_idle_time_before = _param_sysid_idle_time_before.get() * (float)1e6;
+		_idle_time_after = _param_sysid_idle_time_after.get() * (float)1e6;
+		_step_length = _param_sysid_step_length.get() * (float)1e6;
+		_step_amplitude = _param_sysid_step_amplitude.get();
+		_active_axis = (actuator_index)_param_sysid_active_axis.get();
+
+		update_sysid_duration();
+	}
 }
 
 void SystemIdController::sysid_deactivate()

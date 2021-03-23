@@ -62,6 +62,7 @@ private:
 	// Signal generators
 	float generate_signal_step(float amplitude, float step_length);
 	float generate_2_1_1(float ref_value, float amplitude, float step_length, bool inverted);
+	void update_sysid_duration();
 
 	uORB::Subscription _parameter_update_sub{ORB_ID(parameter_update)};		/**< notification of parameter updates */
 
