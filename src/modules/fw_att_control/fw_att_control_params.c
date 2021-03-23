@@ -836,5 +836,12 @@ PARAM_DEFINE_FLOAT(SYSID_STEP_LNGTH, 0.25f);
 PARAM_DEFINE_INT32(SYSID_AUTO_INV, 1);
 
 
+/**
+ * Always start the 2-1-1 signal in the positive direction
+ *
+ * @group System Identification
+ * @boolean
+ */
+PARAM_DEFINE_INT32(SYSID_START_UP, 1);
 
 

@@ -71,6 +71,7 @@ void SystemIdController::parameters_update()
 		_step_length = _param_sysid_step_length.get() * (float)1e6;
 		_step_amplitude = _param_sysid_step_amplitude.get();
 		_active_axis = (actuator_index)_param_sysid_active_axis.get();
+		_start_up = _param_sysid_start_up.get();
 
 		update_sysid_duration();
 	}
@@ -88,7 +89,9 @@ void SystemIdController::update()
 	switch (_signal_type)
 	{
 	case TYPE_2_1_1:
-		_output = generate_2_1_1(_ref_value, _step_amplitude, _step_length, _invert_signal);
+		_output = generate_2_1_1(
+			_ref_value, _step_amplitude, _step_length, _invert_signal, _start_up
+			);
 		break;
 	case TYPE_STEP_SIGNAL:
 	default:
@@ -112,9 +115,15 @@ float SystemIdController::generate_signal_step(float amplitude, float step_lengt
 	return 0;
 }
 
-float SystemIdController::generate_2_1_1(float ref_value, float amplitude, float step_length, bool inverted)
+float SystemIdController::generate_2_1_1(
+	float ref_value, float amplitude, float step_length, bool inverted, bool start_up
+	)
 {
 	float sign = inverted ? -1 : 1;
+	if (start_up)
+	{
+		sign = 1;
+	}
 	if (hrt_elapsed_time(&_sysid_start_time) < _idle_time_before)
 	{
 		return ref_value;

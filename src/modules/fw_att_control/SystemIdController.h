@@ -52,6 +52,7 @@ private:
 	hrt_abstime _step_length;
 	float _step_amplitude;
 	bool _invert_signal = false;
+	bool _start_up = true;
 
 	float _ref_value; // The signals will be generated around this value
 
@@ -61,7 +62,9 @@ private:
 
 	// Signal generators
 	float generate_signal_step(float amplitude, float step_length);
-	float generate_2_1_1(float ref_value, float amplitude, float step_length, bool inverted);
+	float generate_2_1_1(
+		float ref_value, float amplitude, float step_length, bool inverted, bool start_up
+		);
 	void update_sysid_duration();
 
 	uORB::Subscription _parameter_update_sub{ORB_ID(parameter_update)};		/**< notification of parameter updates */
@@ -73,6 +76,7 @@ private:
 		(ParamInt<px4::params::SYSID_ACT_AX>) _param_sysid_active_axis,
 		(ParamFloat<px4::params::SYSID_STEP_AMPL>) _param_sysid_step_amplitude,
 		(ParamFloat<px4::params::SYSID_STEP_LNGTH>) _param_sysid_step_length,
-		(ParamBool<px4::params::SYSID_AUTO_INV>) _param_sysid_auto_invert
+		(ParamBool<px4::params::SYSID_AUTO_INV>) _param_sysid_auto_invert,
+		(ParamBool<px4::params::SYSID_START_UP>) _param_sysid_start_up
 	)
 };
