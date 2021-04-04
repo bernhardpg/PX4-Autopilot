@@ -803,7 +803,6 @@ PARAM_DEFINE_FLOAT(SYSID_IDLE_T_A, 0.5f);
  * @group System Identification
  * @value 0 Roll
  * @value 1 Pitch
- * @group FW Attitude Control
  */
 PARAM_DEFINE_INT32(SYSID_ACT_AX, 0);
 
@@ -845,3 +844,21 @@ PARAM_DEFINE_INT32(SYSID_AUTO_INV, 1);
 PARAM_DEFINE_INT32(SYSID_FSTART_UP, 1);
 
 
+/**
+ * Sysid signal type
+ *
+ * @group System Identification
+ * @value 0 2-1-1
+ * @value 1 Sweep
+ * @value 2 Step
+ */
+PARAM_DEFINE_INT32(SYSID_SIG_TYPE, 0);
+
+
+/**
+ * Sweep both up and down for sweep signal
+ *
+ * @group System Identification
+ * @boolean
+ */
+PARAM_DEFINE_INT32(SYSID_SWP_BOTH, 0);

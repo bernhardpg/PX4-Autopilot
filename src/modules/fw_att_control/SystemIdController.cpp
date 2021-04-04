@@ -6,8 +6,6 @@ SystemIdController::SystemIdController() :
 	parameters_update();
 
 	_init_time = hrt_absolute_time();
-	_signal_type = TYPE_2_1_1; // NOTE: Can be expanded to parameters if needed
-	_active_axis = SYSID_AXIS_ROLL;
 	update_sysid_duration();
 
 	PX4_INFO("%d Sysid initialized", (int)_init_time);
@@ -17,14 +15,24 @@ void SystemIdController::update_sysid_duration()
 {
 	switch (_signal_type)
 	{
+	case TYPE_2_1_1:
+		_sysid_duration = _step_length * 4;
+		break;
+	case TYPE_SWEEP:
+		if (_sweep_do_both_sides)
+		{
+			_sysid_duration = _step_length * 2;
+		}
+		else
+		{
+			_sysid_duration = _step_length;
+		}
+		break;
 	case TYPE_STEP_SIGNAL:
+	default:
 		_sysid_duration = _step_length;
 		break;
 
-	case TYPE_2_1_1:
-	default:
-		_sysid_duration = _step_length * 4;
-		break;
 	}
 	_sysid_duration += _idle_time_before + _idle_time_after;
 }
@@ -70,8 +78,10 @@ void SystemIdController::parameters_update()
 		_idle_time_after = _param_sysid_idle_time_after.get() * (float)1e6;
 		_step_length = _param_sysid_step_length.get() * (float)1e6;
 		_step_amplitude = _param_sysid_step_amplitude.get();
-		_active_axis = (actuator_index)_param_sysid_active_axis.get();
-		_start_up = _param_sysid_start_up.get();
+		_active_axis = (actuator_index_t)_param_sysid_active_axis.get();
+		_start_up = _param_sysid_force_start_up.get();
+		_signal_type = (signal_type_t)_param_sysid_signal_type.get();
+		_sweep_do_both_sides = _param_sysid_sweep_do_both_sides.get();
 
 		update_sysid_duration();
 	}
@@ -93,11 +103,18 @@ void SystemIdController::update()
 			_ref_value, _step_amplitude, _step_length, _invert_signal, _start_up
 			);
 		break;
+	case TYPE_SWEEP:
+		_output = generate_sweep(
+			_ref_value, _step_amplitude, _step_length, _invert_signal, _start_up, _sweep_do_both_sides
+			);
+		break;
 	case TYPE_STEP_SIGNAL:
 	default:
-		_output = generate_signal_step(_step_amplitude, _step_length);
+		//_output = generate_signal_step(_step_amplitude, _step_length); // TODO: Not implemented yet
 		break;
 	}
+
+	// TODO: Clamp output between -1 and 1
 
 	// Deactivate the sysid maneuver to prevent it from running again
 	if (hrt_elapsed_time(&_sysid_start_time) > _sysid_duration)
@@ -128,19 +145,47 @@ float SystemIdController::generate_2_1_1(
 	{
 		return ref_value;
 	}
-	else if (hrt_elapsed_time(&_sysid_start_time) < _idle_time_before + step_length * 2)
+	else if (hrt_elapsed_time(&_sysid_start_time) - _idle_time_before < step_length * 2)
 	{
 		return ref_value + sign * amplitude;
 	}
-	else if (hrt_elapsed_time(&_sysid_start_time) < _idle_time_before + step_length * 3)
+	else if (hrt_elapsed_time(&_sysid_start_time) - _idle_time_before < step_length * 3)
 	{
 		return ref_value + sign * amplitude * (-1);
 	}
-	else if (hrt_elapsed_time(&_sysid_start_time) < _idle_time_before + step_length * 4)
+	else if (hrt_elapsed_time(&_sysid_start_time) - _idle_time_before < step_length * 4)
 	{
 		return ref_value + sign * amplitude;
 	}
 	return ref_value;
 }
 
+float SystemIdController::generate_sweep(
+	float ref_value, float amplitude, float step_length, bool inverted, bool start_up, bool do_both_sides
+	)
+{
+	float sign = inverted ? -1 : 1;
+	if (start_up)
+	{
+		sign = 1;
+	}
+	if (hrt_elapsed_time(&_sysid_start_time) < _idle_time_before)
+	{
+		return ref_value;
+	}
+	else if (hrt_elapsed_time(&_sysid_start_time) - _idle_time_before < step_length)
+	{
+		float linear_ramp_time = (float)(hrt_elapsed_time(&_sysid_start_time) - _idle_time_before) / (float)step_length;
+		return ref_value + sign * linear_ramp_time * amplitude;
+	}
+	else if (
+		do_both_sides
+		&& hrt_elapsed_time(&_sysid_start_time) - _idle_time_before < step_length * 2
+		)
+	{
+		float linear_ramp_time = (float)(hrt_elapsed_time(&_sysid_start_time) - _idle_time_before) / (float)step_length;
+		return ref_value - sign * linear_ramp_time * amplitude + sign * 2 * amplitude;
+	}
+	return ref_value;
+}
 
