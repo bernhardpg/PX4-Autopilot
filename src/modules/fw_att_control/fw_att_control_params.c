@@ -774,7 +774,7 @@ PARAM_DEFINE_FLOAT(FW_DTRIM_P_FLPS, 0.0f);
  * @group System Identification
  * @boolean
  */
-PARAM_DEFINE_INT32(SYSID_ACTIVE, 0);
+PARAM_DEFINE_INT32(SYSID_ENABLE, 0);
 
 /**
  * Time (seconds) before 2-1-1 maneuver starts
@@ -837,11 +837,11 @@ PARAM_DEFINE_INT32(SYSID_AUTO_INV, 1);
 
 
 /**
- * Always start the 2-1-1 signal in the positive direction
+ * Force the signal to start the 2-1-1 signal in the positive direction
  *
  * @group System Identification
  * @boolean
  */
-PARAM_DEFINE_INT32(SYSID_START_UP, 1);
+PARAM_DEFINE_INT32(SYSID_FSTART_UP, 1);
 
 

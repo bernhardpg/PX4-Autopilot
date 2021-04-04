@@ -70,13 +70,13 @@ private:
 	uORB::Subscription _parameter_update_sub{ORB_ID(parameter_update)};		/**< notification of parameter updates */
 
 	DEFINE_PARAMETERS(
-		(ParamBool<px4::params::SYSID_ACTIVE>) _param_sysid_active,
+		(ParamBool<px4::params::SYSID_ENABLE>) _param_sysid_enable,
 		(ParamFloat<px4::params::SYSID_IDLE_T_B>) _param_sysid_idle_time_before,
 		(ParamFloat<px4::params::SYSID_IDLE_T_A>) _param_sysid_idle_time_after,
 		(ParamInt<px4::params::SYSID_ACT_AX>) _param_sysid_active_axis,
 		(ParamFloat<px4::params::SYSID_STEP_AMPL>) _param_sysid_step_amplitude,
 		(ParamFloat<px4::params::SYSID_STEP_LNGTH>) _param_sysid_step_length,
 		(ParamBool<px4::params::SYSID_AUTO_INV>) _param_sysid_auto_invert,
-		(ParamBool<px4::params::SYSID_START_UP>) _param_sysid_start_up
+		(ParamBool<px4::params::SYSID_FSTART_UP>) _param_sysid_force_start_up,
 	)
 };
